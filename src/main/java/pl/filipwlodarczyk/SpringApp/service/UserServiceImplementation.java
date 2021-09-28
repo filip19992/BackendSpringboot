@@ -3,6 +3,11 @@ package pl.filipwlodarczyk.SpringApp.service;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.filipwlodarczyk.SpringApp.domain.Role;
@@ -18,7 +23,28 @@ import java.util.List;
 @RequiredArgsConstructor
 @Transactional
 @Slf4j
-public class UserServiceImplementation implements UserService {
+public class UserServiceImplementation implements UserService, UserDetailsService {
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepo.findByEmail(email);
+
+        if (user == null) {
+            log.error("There is no user with such email");
+            throw new UsernameNotFoundException("There is no user with such email");
+        } else {
+            log.info("User found");
+        }
+        Collection<SimpleGrantedAuthority> authroties = new ArrayList<>();
+
+        Collection<Role> roles = user.getRoles();
+
+        roles.forEach(role ->
+                authroties.add(new SimpleGrantedAuthority(role.getName())));
+
+        return new org.springframework.security.core.userdetails.
+                User(user.getEmail(),user.getPassword(),authroties);
+    }
 
     @Autowired
     private final UserRepo userRepo;
@@ -80,4 +106,6 @@ public class UserServiceImplementation implements UserService {
             }
         }
     }
+
+
 }
