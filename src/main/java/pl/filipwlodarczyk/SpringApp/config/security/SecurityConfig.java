@@ -34,7 +34,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         http.csrf().disable();
         http
                 .authorizeRequests().anyRequest().permitAll()
-                .antMatchers("/main").permitAll()
+               // .antMatchers("/main").permitAll()
                 .and()
                 .sessionManagement().sessionCreationPolicy(STATELESS);
         http.addFilter(new AuthenticationFilter(authenticationManager()));

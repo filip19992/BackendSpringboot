@@ -10,6 +10,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.filipwlodarczyk.SpringApp.config.security.PasswordEncoder;
 import pl.filipwlodarczyk.SpringApp.domain.Role;
 import pl.filipwlodarczyk.SpringApp.domain.User;
 import pl.filipwlodarczyk.SpringApp.repo.RoleRepo;
@@ -24,6 +25,15 @@ import java.util.List;
 @Transactional
 @Slf4j
 public class UserServiceImplementation implements UserService, UserDetailsService {
+
+    @Autowired
+    private final UserRepo userRepo;
+
+    @Autowired
+    private final RoleRepo roleRepo;
+
+    @Autowired
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
@@ -46,15 +56,10 @@ public class UserServiceImplementation implements UserService, UserDetailsServic
                 User(user.getEmail(),user.getPassword(),authroties);
     }
 
-    @Autowired
-    private final UserRepo userRepo;
-
-    @Autowired
-    private final RoleRepo roleRepo;
-
 
     @Override
     public User saveUser(User user) {
+        user.setPassword(passwordEncoder.bCryptPasswordEncoder().encode(user.getPassword()));
         return userRepo.save(user);
     }
 
